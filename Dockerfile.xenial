@@ -105,6 +105,7 @@ ENV UWSGI_PLUGIN "python36"
 ENV UWSGI_FILE "$INSTALL_DIR/bin/run_app.py"
 ENV UWSGI_PYARGS "$AAI --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME"
 ENV UWSGI_SOCKET_TIMEOUT 65
+ENV UWSGI_HTTP_TIMEOUT 3600000
 ENV UWSGI_BUFFER_SIZE 32768
 ENV UWSGI_CHMOD_SOCKET 660
 
@@ -176,7 +177,7 @@ EXPOSE $PORT
 CMD ["sh", "-c", "/usr/local/bin/uwsgi --binary-path /usr/local/bin/uwsgi --wsgi-file $UWSGI_FILE --callable app --pyargv=\"$UWSGI_PYARGS\" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket :$PORT --socket-timeout=$UWSGI_SOCKET_TIMEOUT --master --chmod-socket=$UWSGI_CHMOD_SOCKET --vacuum --die-on-term"]
 
 # - Run with tcp socket over http protocol
-##CMD ["sh", "-c", "/usr/local/bin/uwsgi --plugin python,http --binary-path /usr/local/bin/uwsgi --wsgi-file $UWSGI_FILE --callable app --pyargv=\"$UWSGI_PYARGS\" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --http :$PORT --socket-timeout=$UWSGI_SOCKET_TIMEOUT --master --chmod-socket=$UWSGI_CHMOD_SOCKET --vacuum --die-on-term"]
+#CMD ["sh", "-c", "/usr/local/bin/uwsgi --plugin python,http --binary-path /usr/local/bin/uwsgi --wsgi-file $UWSGI_FILE --callable app --pyargv=\"$UWSGI_PYARGS\" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --http :$PORT --http-timeout=$UWSGI_HTTP_TIMEOUT --socket-timeout=$UWSGI_SOCKET_TIMEOUT --master --chmod-socket=$UWSGI_CHMOD_SOCKET --vacuum --die-on-term"]
 
 
 ##CMD /bin/sh

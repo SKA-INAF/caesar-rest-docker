@@ -191,7 +191,7 @@ ENV CAESAR_SCRIPTS_DIR $CAESAR_DIR/scripts
 # - Set PATH vars
 ENV PATH $CAESAR_REST_DIR/bin:$CAESAR_DIR/bin:$CAESAR_SCRIPTS_DIR:$MASKRCNN_INSTALL_DIR/bin:$PATH
 ENV LD_LIBRARY_PATH $CAESAR_REST_DIR/lib:$CAESAR_DIR/lib:$LD_LIBRARY_PATH
-ENV PYTHONPATH $CAESAR_REST_DIR/lib/python3.6/site-packages:$MASKRCNN_INSTALL_DIR/lib/python3.6/site-packages/mrcnn-1.0.0-py3.6.egg:$PYTHONPATH
+ENV PYTHONPATH $CAESAR_REST_DIR/lib/python3.6/site-packages:$CAESAR_REST_DIR/lib/python3.6/site-packages/caesar_rest-1.0.0-py3.6.egg/:$MASKRCNN_INSTALL_DIR/lib/python3.6/site-packages/mrcnn-1.0.0-py3.6.egg:$PYTHONPATH
 
 
 ######################################

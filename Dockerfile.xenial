@@ -1,4 +1,3 @@
-###FROM ubuntu:16.04
 FROM sriggi/caesar:latest
 
 MAINTAINER Simone Riggi "simone.riggi@gmail.com"
@@ -30,8 +29,11 @@ ENV DBNAME $DBNAME_ARG
 ARG SECRETFILE_ARG=/etc/systemd/system/client_secrets.json
 ENV SECRETFILE $SECRETFILE_ARG
 
-ARG AAI_ARG
-ENV AAI ${AAI_ARG:+"--aai"}
+#ARG AAI_ARG 
+#ENV AAI ${AAI_ARG:+"--aai"}
+ARG AAI_ARG=0
+ENV AAI $AAI_ARG
+
 
 ARG BROKER_HOST_ARG="127.0.0.1"
 ENV BROKER_HOST $BROKER_HOST_ARG
@@ -161,22 +163,14 @@ RUN cd $MASKRCNN_DIR/mrcnn && \
 ##     CONFIGURE CAESAR-REST
 ######################################
 # - Configure uwsgi
-ENV UWSGI_PLUGIN_DIR "/usr/lib/uwsgi/plugins/"
-ENV UWSGI_PLUGIN "python36"
+##ENV UWSGI_PLUGIN_DIR "/usr/lib/uwsgi/plugins/"
+##ENV UWSGI_PLUGIN "python36"
 ENV UWSGI_FILE "$INSTALL_DIR/bin/run_app.py"
-ENV UWSGI_PYARGS "$AAI --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS"
+##ENV UWSGI_PYARGS "$AAI --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS"
 ENV UWSGI_SOCKET_TIMEOUT 65
 ENV UWSGI_HTTP_TIMEOUT 3600000
 ENV UWSGI_BUFFER_SIZE 32768
 ENV UWSGI_CHMOD_SOCKET 660
-
-# - Installed with yum
-#ENV UWSGI_EXE "/usr/bin/uwsgi"
-#ENV UWSGI_ARGS "--plugins-dir=$UWSGI_PLUGIN_DIR --plugin $UWSGI_PLUGIN --wsgi-file $UWSGI_FILE --callable app --pyargv=\"$UWSGI_PYARGS\" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket=$INSTALL_DIR/run/caesar-rest.sock --socket-timeout=$UWSGI_SOCKET_TIMEOUT --master --chmod-socket=$UWSGI_CHMOD_SOCKET --vacuum --die-on-term"
-
-# - Installed with pip (no need to specify plugins as embedded in the binary)
-ENV UWSGI_EXE "/usr/local/bin/uwsgi"
-ENV UWSGI_ARGS "--binary-path /usr/local/bin/uwsgi --wsgi-file $UWSGI_FILE --callable app --pyargv=\"$UWSGI_PYARGS\" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket=$INSTALL_DIR/run/caesar-rest.sock --socket-timeout=$UWSGI_SOCKET_TIMEOUT --master --chmod-socket=$UWSGI_CHMOD_SOCKET --vacuum --die-on-term"
 
 
 ######################################
@@ -200,19 +194,23 @@ ENV PYTHONPATH $CAESAR_REST_DIR/lib/python3.6/site-packages:$CAESAR_REST_DIR/lib
 # - Expose container port
 EXPOSE $PORT
 
-# - Set uwsgi as the dockerized entry-point application
-##ENTRYPOINT runuser -l $USER -g $USER -c "'"$UWSGI_EXE $UWSGI_ARGS"'"
+# - Copy run script
+COPY run_uwsgi.sh /opt/caesar-rest/bin/run_uwsgi.sh
+RUN chmod +x /opt/caesar-rest/bin/run_uwsgi.sh
+
 
 # - Run with unix socket (only same machine)
 ##CMD /usr/local/bin/uwsgi --binary-path /usr/local/bin/uwsgi --wsgi-file /opt/caesar-rest/bin/run_app.py --callable app --pyargv=" --secretfile=/etc/systemd/system/client_secrets.json --sfindernn_weights=/opt/caesar-rest/share/mrcnn_weights.h5 --db --dbhost=localhost --dbname=caesardb" --workers=2 --enable-threads --threads=2 --socket=/opt/caesar-rest/run/caesar-rest.sock --socket-timeout=65 --master --chmod-socket=660 --vacuum --die-on-term
 
 # - Run with tcp socket over uwsgi protocol
-CMD ["sh", "-c", "/usr/local/bin/uwsgi --binary-path /usr/local/bin/uwsgi --wsgi-file $UWSGI_FILE --callable app --pyargv=\"$UWSGI_PYARGS\" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket :$PORT --socket-timeout=$UWSGI_SOCKET_TIMEOUT --master --chmod-socket=$UWSGI_CHMOD_SOCKET --vacuum --die-on-term"]
+#CMD ["sh", "-c", "/usr/local/bin/uwsgi --binary-path /usr/local/bin/uwsgi --wsgi-file $UWSGI_FILE --callable app --pyargv=\"$UWSGI_PYARGS\" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket :$PORT --socket-timeout=$UWSGI_SOCKET_TIMEOUT --master --chmod-socket=$UWSGI_CHMOD_SOCKET --vacuum --die-on-term"]
+
+#CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh","--port=$PORT","--file=$UWSGI_FILE","--nworkers=$NWORKERS","--nthreads=$NTHREADS","--socket-timeout=$UWSGI_SOCKET_TIMEOUT","--chmod-socket=$UWSGI_CHMOD_SOCKET","--bufsize=$UWSGI_BUFFER_SIZE","--aai=$AAI","--secretfile=$SECRETFILE","--nnweights=$NNWEIGHTS","--dbhost=$DBHOST","--dbport=$DBPORT","--dbname=$DBNAME","--result-backend-host=$RESULT_BACKEND_HOST","--result-backend-port=$RESULT_BACKEND_PORT","--result-backend-proto=$RESULT_BACKEND_PROTO","--result-backend-dbname=$RESULT_BACKEND_DBNAME","--broker-host=$BROKER_HOST","--broker-port=$BROKER_PORT","--broker-proto=$BROKER_PROTO","--broker-user=$BROKER_USER","--broker-pass=$BROKER_PASS"]
+
+CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --secretfile=$SECRETFILE --nnweights=$NNWEIGHTS --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS"]
+
 
 # - Run with tcp socket over http protocol
 #CMD ["sh", "-c", "/usr/local/bin/uwsgi --plugin python,http --binary-path /usr/local/bin/uwsgi --wsgi-file $UWSGI_FILE --callable app --pyargv=\"$UWSGI_PYARGS\" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --http :$PORT --http-timeout=$UWSGI_HTTP_TIMEOUT --socket-timeout=$UWSGI_SOCKET_TIMEOUT --master --chmod-socket=$UWSGI_CHMOD_SOCKET --vacuum --die-on-term"]
-
-
-##CMD /bin/sh
 
 

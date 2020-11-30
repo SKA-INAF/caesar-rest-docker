@@ -3,6 +3,7 @@
 ##########################
 ##    PARSE ARGS
 ##########################
+RUNUSER="caesar"
 PORT=3031
 FILE="/opt/caesar-rest/bin/run_app.py"
 NWORKERS=2
@@ -26,12 +27,15 @@ BROKER_USER="guest"
 BROKER_PASS="guest"
 AAI=0
 
+
 echo "ARGS: $@"
 
 for item in "$@"
 do
 	case $item in
-		
+		--runuser=*)
+    	RUNUSER=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
 		--port=*)
     	PORT=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
@@ -119,7 +123,7 @@ PYARGS="$AAI_OPT --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --
 ###############################
 # - Define run command & args
 EXE="/usr/local/bin/uwsgi"
-ARGS="--binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket=":$PORT" --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket=":$PORT" --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
 
 # - Run uwsgi
 echo "INFO: Running uwsgi with command: $EXE $ARGS ..."

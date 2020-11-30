@@ -85,7 +85,7 @@ RUN unset PYTHONPATH && curl https://bootstrap.pypa.io/get-pip.py | python3.6
 
 # - Install packages
 ##RUN apt-get update && apt-get --no-install-recommends install -y dialog apt-utils apt-transport-https ca-certificates gnupg gnupg2 wget libcurl3 openssl systemd curl software-properties-common dpkg-dev g++ gcc binutils libtool pkg-config build-essential autoconf automake cmake nano unzip locate less git libssl-dev uuid-dev libcap-dev libpcre3-dev
-RUN apt-get update && apt-get --no-install-recommends install -y libcurl3 openssl libssl-dev uuid-dev libcap-dev libpcre3-dev
+RUN apt-get update && apt-get --no-install-recommends install -y libcurl3 openssl libssl-dev uuid-dev libcap-dev libpcre3-dev util-linux
 
 
 ######################################
@@ -128,7 +128,8 @@ RUN adduser --disabled-password --gecos "" $USER && \
     mkdir -p /home/$USER && \
     chown -R $USER:$USER /home/$USER && \
     chown -R $USER:$USER $INSTALL_DIR && \
-    chown -R www-data $INSTALL_DIR/run && \
+    #chown -R www-data $INSTALL_DIR/run && \
+		#chown -R $USER $INSTALL_DIR/run && \
     echo "export PYTHONPATH=$INSTALL_DIR/lib/python3.6/site-packages:\$PYTHONPATH" >> /home/$USER/.profile
 
 # - Build & install
@@ -186,6 +187,10 @@ ENV CAESAR_SCRIPTS_DIR $CAESAR_DIR/scripts
 ENV PATH $CAESAR_REST_DIR/bin:$CAESAR_DIR/bin:$CAESAR_SCRIPTS_DIR:$MASKRCNN_INSTALL_DIR/bin:$PATH
 ENV LD_LIBRARY_PATH $CAESAR_REST_DIR/lib:$CAESAR_DIR/lib:$LD_LIBRARY_PATH
 ENV PYTHONPATH $CAESAR_REST_DIR/lib/python3.6/site-packages:$CAESAR_REST_DIR/lib/python3.6/site-packages/caesar_rest-1.0.0-py3.6.egg/:$MASKRCNN_INSTALL_DIR/lib/python3.6/site-packages/mrcnn-1.0.0-py3.6.egg:$PYTHONPATH
+
+RUN echo "export PATH=$PATH" >> /home/$USER/.profile
+RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> /home/$USER/.profile
+RUN echo "export PYTHONPATH=$PYTHONPATH" >> /home/$USER/.profile
 
 
 ######################################

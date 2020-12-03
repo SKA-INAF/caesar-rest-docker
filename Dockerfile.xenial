@@ -127,7 +127,7 @@ ENV INSTALL_DIR /opt/caesar-rest
 RUN mkdir -p $INSTALL_DIR $INSTALL_DIR/src $INSTALL_DIR/lib/python3.6/site-packages $INSTALL_DIR/data $INSTALL_DIR/jobs $INSTALL_DIR/config $INSTALL_DIR/logs $INSTALL_DIR/run $INSTALL_DIR/share
 
 # - Clone caesar-rest
-RUN cd $INSTALL_DIR/src && git clone https://github.com/SKA-INAF/caesar-rest.git .
+RUN cd $INSTALL_DIR/src && git clone https://github.com/SKA-INAF/caesar-rest.git && cd $INSTALL_DIR/src/caesar-rest && git pull origin devel .
 
 # - Create user & set permissions
 RUN adduser --disabled-password --gecos "" $USER && \
@@ -157,7 +157,7 @@ RUN unset PYTHONPATH && pip3.6 install h5py imgaug Pillow cython scipy pyparsing
 
 # - Clone mrcnn
 RUN mkdir -p $MASKRCNN_DIR $MASKRCNN_INSTALL_DIR $MASKRCNN_INSTALL_DIR/lib/python3.6/site-packages
-RUN cd $MASKRCNN_DIR && git clone https://github.com/SKA-INAF/mrcnn.git
+RUN cd $MASKRCNN_DIR && git clone https://github.com/SKA-INAF/mrcnn.git && cd $MASKRCNN_DIR/mrcnn && git pull origin master
 
 # - Build & install
 ENV PYTHONPATH $MASKRCNN_INSTALL_DIR/lib/python3.6/site-packages/

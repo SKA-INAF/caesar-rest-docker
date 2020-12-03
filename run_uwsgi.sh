@@ -5,6 +5,8 @@
 ##########################
 RUNUSER="caesar"
 PORT=3031
+DATADIR="/opt/caesar-rest/data"
+JOBDIR="/opt/caesar-rest/jobs"
 FILE="/opt/caesar-rest/bin/run_app.py"
 NWORKERS=2
 NTHREADS=2
@@ -38,6 +40,12 @@ do
     ;;
 		--port=*)
     	PORT=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--datadir=*)
+    	DATADIR=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--jobdir=*)
+    	JOBDIR=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
 		--file=*)
     	UWSGI_FILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
@@ -116,7 +124,7 @@ if [ "$AAI" = "1" ] ; then
   AAI_OPT="--aai"
 fi
 
-PYARGS="$AAI_OPT --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS"
+PYARGS="$AAI_OPT --datadir=$DATADIR --jobdir=$JOBDIR --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS"
 
 ###############################
 ##    RUN UWSGI

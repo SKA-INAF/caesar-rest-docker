@@ -11,6 +11,12 @@ ENV USER $USER_ARG
 ARG PORT_ARG=3031
 ENV PORT $PORT_ARG
 
+ARG DATADIR_ARG=/opt/caesar-rest/data
+ENV DATADIR $DATADIR_ARG
+
+ARG JOBDIR_ARG=/opt/caesar-rest/jobs
+ENV JOBDIR $DATADIR_ARG
+
 ARG NWORKERS_ARG=2
 ENV NWORKERS $NWORKERS_ARG
 
@@ -212,7 +218,7 @@ RUN chmod +x /opt/caesar-rest/bin/run_uwsgi.sh
 
 #CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh","--port=$PORT","--file=$UWSGI_FILE","--nworkers=$NWORKERS","--nthreads=$NTHREADS","--socket-timeout=$UWSGI_SOCKET_TIMEOUT","--chmod-socket=$UWSGI_CHMOD_SOCKET","--bufsize=$UWSGI_BUFFER_SIZE","--aai=$AAI","--secretfile=$SECRETFILE","--nnweights=$NNWEIGHTS","--dbhost=$DBHOST","--dbport=$DBPORT","--dbname=$DBNAME","--result-backend-host=$RESULT_BACKEND_HOST","--result-backend-port=$RESULT_BACKEND_PORT","--result-backend-proto=$RESULT_BACKEND_PROTO","--result-backend-dbname=$RESULT_BACKEND_DBNAME","--broker-host=$BROKER_HOST","--broker-port=$BROKER_PORT","--broker-proto=$BROKER_PROTO","--broker-user=$BROKER_USER","--broker-pass=$BROKER_PASS"]
 
-CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --secretfile=$SECRETFILE --nnweights=$NNWEIGHTS --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS"]
+CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --secretfile=$SECRETFILE --nnweights=$NNWEIGHTS --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS"]
 
 
 # - Run with tcp socket over http protocol

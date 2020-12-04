@@ -28,7 +28,8 @@ BROKER_PROTO="amqp"
 BROKER_USER="guest"
 BROKER_PASS="guest"
 AAI=0
-
+SSL=0
+JOB_MONITORING_PERIOD=5
 
 echo "ARGS: $@"
 
@@ -67,6 +68,12 @@ do
     ;;
 		--aai=*)
     	AAI=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--ssl=*)
+    	SSL=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--job-monitoring-period=*)
+    	JOB_MONITORING_PERIOD=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
 		--secretfile=*)
     	SECRETFILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
@@ -124,7 +131,12 @@ if [ "$AAI" = "1" ] ; then
   AAI_OPT="--aai"
 fi
 
-PYARGS="$AAI_OPT --datadir=$DATADIR --jobdir=$JOBDIR --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS"
+SSL_OPT=""
+if [ "$SSL" = "1" ] ; then
+  SSL_OPT="--ssl"
+fi
+
+PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT"
 
 ###############################
 ##    RUN UWSGI

@@ -40,6 +40,11 @@ ENV SECRETFILE $SECRETFILE_ARG
 ARG AAI_ARG=0
 ENV AAI $AAI_ARG
 
+ARG SSL_ARG=0
+ENV SSL $SSL_ARG
+
+ARG JOB_MONITORING_PERIOD_ARG=5
+ENV JOB_MONITORING_PERIOD $JOB_MONITORING_PERIOD_ARG
 
 ARG BROKER_HOST_ARG="127.0.0.1"
 ENV BROKER_HOST $BROKER_HOST_ARG
@@ -110,7 +115,7 @@ RUN unset PYTHONPATH && pip3.6 install --upgrade uwsgi
 ##RUN apt-get install -y nginx
 
 # - Install python modules
-RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 
+RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml pymongo flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 
 
 
 ######################################
@@ -218,7 +223,7 @@ RUN chmod +x /opt/caesar-rest/bin/run_uwsgi.sh
 
 #CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh","--port=$PORT","--file=$UWSGI_FILE","--nworkers=$NWORKERS","--nthreads=$NTHREADS","--socket-timeout=$UWSGI_SOCKET_TIMEOUT","--chmod-socket=$UWSGI_CHMOD_SOCKET","--bufsize=$UWSGI_BUFFER_SIZE","--aai=$AAI","--secretfile=$SECRETFILE","--nnweights=$NNWEIGHTS","--dbhost=$DBHOST","--dbport=$DBPORT","--dbname=$DBNAME","--result-backend-host=$RESULT_BACKEND_HOST","--result-backend-port=$RESULT_BACKEND_PORT","--result-backend-proto=$RESULT_BACKEND_PROTO","--result-backend-dbname=$RESULT_BACKEND_DBNAME","--broker-host=$BROKER_HOST","--broker-port=$BROKER_PORT","--broker-proto=$BROKER_PROTO","--broker-user=$BROKER_USER","--broker-pass=$BROKER_PASS"]
 
-CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --secretfile=$SECRETFILE --nnweights=$NNWEIGHTS --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS"]
+CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --job-monitoring-period=$JOB_MONITORING_PERIOD --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --ssl=$SSL --secretfile=$SECRETFILE --nnweights=$NNWEIGHTS --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS"]
 
 
 # - Run with tcp socket over http protocol

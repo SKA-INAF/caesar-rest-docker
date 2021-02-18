@@ -96,7 +96,7 @@ RUN unset PYTHONPATH && curl https://bootstrap.pypa.io/get-pip.py | python3.6
 
 # - Install packages
 ##RUN apt-get update && apt-get --no-install-recommends install -y dialog apt-utils apt-transport-https ca-certificates gnupg gnupg2 wget libcurl3 openssl systemd curl software-properties-common dpkg-dev g++ gcc binutils libtool pkg-config build-essential autoconf automake cmake nano unzip locate less git libssl-dev uuid-dev libcap-dev libpcre3-dev
-RUN apt-get update && apt-get --no-install-recommends install -y libcurl3 openssl libssl-dev uuid-dev libcap-dev libpcre3-dev util-linux
+RUN apt-get update && apt-get --no-install-recommends install -y libcurl3 openssl libssl-dev uuid-dev libcap-dev libpcre3-dev util-linux openssh-client openssh-server
 
 
 ######################################
@@ -115,7 +115,7 @@ RUN unset PYTHONPATH && pip3.6 install --upgrade uwsgi
 ##RUN apt-get install -y nginx
 
 # - Install python modules
-RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml pymongo flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 
+RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml pymongo flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 astropy==2.0.16 regions
 
 
 ######################################
@@ -147,6 +147,7 @@ RUN adduser --disabled-password --gecos "" $USER && \
 RUN cd $INSTALL_DIR/src && \
     unset PYTHONPATH && python3.6 setup.py sdist bdist_wheel && \
     unset PYTHONPATH && python3.6 setup.py build && \
+##		unset PYTHONPATH && python3.6 -m pip3.6 install --prefix=$INSTALL_DIR
     unset PYTHONPATH && python3.6 setup.py install --prefix=$INSTALL_DIR
 
 ######################################

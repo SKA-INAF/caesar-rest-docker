@@ -151,13 +151,16 @@ EXE="/usr/local/bin/uwsgi"
 
 if [ "$UWSGI_HTTP" = "1" ] ; then
 	if [ "$SSL" = "1" ] ; then
-  	ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --https-socket="0.0.0.0:$PORT" --http-timeout=$SOCKET_TIMEOUT --http-enable-proxy-protocol --http-auto-chunked --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+		echo "INFO: Running uwsgi with https-socket option ..."
+  	ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --https-socket="0.0.0.0:$PORT" --http-timeout=$SOCKET_TIMEOUT --http-enable-proxy-protocol --http-auto-chunked --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --chown-socket=$RUNUSER --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
 	else
-		ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --http-socket="0.0.0.0:$PORT" --http-timeout=$SOCKET_TIMEOUT --http-enable-proxy-protocol --http-auto-chunked --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+    echo "INFO: Running uwsgi with http-socket option ..."
+		ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --http-socket="0.0.0.0:$PORT" --http-timeout=$SOCKET_TIMEOUT --http-enable-proxy-protocol --http-auto-chunked --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --chown-socket=$RUNUSER --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
 	fi
 else
-	ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket="0.0.0.0:$PORT" --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
-	##ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket=":$PORT" --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+	#ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket="0.0.0.0:$PORT" --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+	echo "INFO: Running uwsgi with socket option ..."
+	ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket=":$PORT" --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --chown-socket=$RUNUSER --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
 fi
 
 # - Run uwsgi

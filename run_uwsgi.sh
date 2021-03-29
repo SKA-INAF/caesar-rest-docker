@@ -30,6 +30,7 @@ BROKER_PASS="guest"
 AAI=0
 SSL=0
 JOB_MONITORING_PERIOD=5
+UWSGI_HTTP=0
 
 echo "ARGS: $@"
 
@@ -49,7 +50,7 @@ do
     	JOBDIR=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
 		--file=*)
-    	UWSGI_FILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    	FILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
 		--nworkers=*)
     	NWORKERS=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
@@ -71,6 +72,9 @@ do
     ;;
 		--ssl=*)
     	SSL=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--uwsgi-http=*)
+    	UWSGI_HTTP=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
 		--job-monitoring-period=*)
     	JOB_MONITORING_PERIOD=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
@@ -143,7 +147,18 @@ PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITOR
 ###############################
 # - Define run command & args
 EXE="/usr/local/bin/uwsgi"
-ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket=":$PORT" --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+#ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket=":$PORT" --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+
+if [ "$UWSGI_HTTP" = "1" ] ; then
+	if [ "$SSL" = "1" ] ; then
+  	ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --https-socket="0.0.0.0:$PORT" --http-timeout=$SOCKET_TIMEOUT --http-enable-proxy-protocol --http-auto-chunked --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+	else
+		ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --http-socket="0.0.0.0:$PORT" --http-timeout=$SOCKET_TIMEOUT --http-enable-proxy-protocol --http-auto-chunked --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+	fi
+else
+	ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket="0.0.0.0:$PORT" --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+	##ARGS="--uid=$RUNUSER --gid=$RUNUSER --binary-path /usr/local/bin/uwsgi --wsgi-file=$FILE --callable=app --pyargv=""'"$PYARGS"'"" --workers=$NWORKERS --enable-threads --threads=$NTHREADS --socket=":$PORT" --socket-timeout=$SOCKET_TIMEOUT --master --chmod-socket=$CHMOD_SOCKET --buffer-size=$BUFFER_SIZE --vacuum --die-on-term"
+fi
 
 # - Run uwsgi
 echo "INFO: Running uwsgi with command: $EXE $ARGS ..."

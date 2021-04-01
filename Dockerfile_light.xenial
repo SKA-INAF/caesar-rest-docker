@@ -85,10 +85,9 @@ RUN echo "RESULT_BACKEND_URL=$RESULT_BACKEND_URL"
 ##########################################################
 ##     INSTALL SYS LIBS (IF NOT PRESENT IN BASE IMAGE
 ##########################################################
-RUN apt-get update
 
 # - Install OS packages
-RUN apt-get install -y software-properties-common apt-utils curl binutils libtool pkg-config build-essential autoconf automake debconf-utils software-properties-common dpkg-dev git cmake wget bzip2 nano unzip locate less ca-certificates iputils-ping nmap
+RUN apt-get update && apt-get install -y software-properties-common apt-utils curl binutils libtool pkg-config build-essential autoconf automake debconf-utils software-properties-common dpkg-dev git cmake wget bzip2 nano unzip locate less ca-certificates iputils-ping nmap
 
 # - Install python3.6
 RUN unset PYTHONPATH && add-apt-repository ppa:deadsnakes/ppa

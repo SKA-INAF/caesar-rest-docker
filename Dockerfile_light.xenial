@@ -100,6 +100,14 @@ RUN unset PYTHONPATH && curl https://bootstrap.pypa.io/get-pip.py | python3.6
 # - Install packages
 RUN apt-get update && apt-get --no-install-recommends install -y libcurl3 openssl libssl-dev uuid-dev libcap-dev libpcre3-dev util-linux openssh-client openssh-server
 
+######################################
+##     INSTALL RCLONE
+######################################
+# - Install fuse
+RUN apt-get update && apt-get --no-install-recommends install -y fuse
+
+# - Install rclone
+RUN curl https://rclone.org/install.sh | bash
 
 ######################################
 ##     INSTALL CAESAR-REST DEPS

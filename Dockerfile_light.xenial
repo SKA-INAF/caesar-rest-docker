@@ -79,6 +79,15 @@ ENV RESULT_BACKEND_DBNAME $RESULT_BACKEND_DBNAME_ARG
 
 ENV RESULT_BACKEND_URL "$RESULT_BACKEND_PROTO://$RESULT_BACKEND_HOST:$RESULT_BACKEND_PORT/$RESULT_BACKEND_DBNAME"
 
+ARG MOUNT_RCLONE_VOLUME_ARG=0
+ENV MOUNT_RCLONE_VOLUME $MOUNT_RCLONE_VOLUME_ARG
+
+ARG MOUNT_VOLUME_PATH_ARG="/mnt/storage"
+ENV MOUNT_VOLUME_PATH $MOUNT_VOLUME_PATH_ARG
+
+ARG RCLONE_REMOTE_STORAGE_ARG="neanias-nextcloud"
+ENV RCLONE_REMOTE_STORAGE $RCLONE_REMOTE_STORAGE_ARG
+
 RUN echo "BROKER_URL=$BROKER_URL"
 RUN echo "RESULT_BACKEND_URL=$RESULT_BACKEND_URL"
 
@@ -171,6 +180,12 @@ RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> /home/$USER/.profile
 RUN echo "export PYTHONPATH=$PYTHONPATH" >> /home/$USER/.profile
 
 ######################################
+##     MOUNT VOLUME PATH
+######################################
+# - Create mount volume path
+RUN mkdir -p ${MOUNT_VOLUME_PATH}
+
+######################################
 ##     SET RUN OPTIONS
 ######################################
 # - Expose container port
@@ -181,6 +196,7 @@ COPY run_uwsgi.sh /opt/caesar-rest/bin/run_uwsgi.sh
 RUN chmod +x /opt/caesar-rest/bin/run_uwsgi.sh
 
 # - Run with tcp socket over uwsgi protocol
-CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --job-monitoring-period=$JOB_MONITORING_PERIOD --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --ssl=$SSL --uwsgi-http=$UWSGI_HTTP --secretfile=$SECRETFILE --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS"]
+CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --job-monitoring-period=$JOB_MONITORING_PERIOD --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --ssl=$SSL --uwsgi-http=$UWSGI_HTTP --secretfile=$SECRETFILE --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS --mount-rclone-volume=$MOUNT_RCLONE_VOLUME --mount-volume-path=$MOUNT_VOLUME_PATH --rclone-remote-storage=$RCLONE_REMOTE_STORAGE"]
+
 
 

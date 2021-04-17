@@ -134,6 +134,9 @@ do
 		--rclone-remote-storage=*)
     	RCLONE_REMOTE_STORAGE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
+		--rclone-mount-wait=*)
+    	RCLONE_MOUNT_WAIT_TIME=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
 
 	*)
     # Unknown option
@@ -182,6 +185,7 @@ if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 
 	# - Get device ID of mount point
 	MOUNT_DEVICE_ID=`stat "$MOUNT_VOLUME_PATH" -c %d`
+	echo "INFO: MOUNT_DEVICE_ID=$MOUNT_DEVICE_ID"
 	if [ "$MOUNT_DEVICE_ID" = "$DEVICE_ID" ] ; then
  		echo "ERROR: Failed to mount rclone storage at $MOUNT_VOLUME_PATH within $RCLONE_MOUNT_WAIT_TIME seconds, exit!"
 		exit 1

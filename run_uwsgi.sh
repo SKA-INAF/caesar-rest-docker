@@ -177,8 +177,10 @@ if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 	echo "INFO: Standard device id @ $HOME: $DEVICE_ID"
 
 	# - Mount rclone volume in background
-	echo "INFO: Mounting rclone volume at path $MOUNT_VOLUME_PATH for uid/gid=$RUNUSER ..."
-	MOUNT_CMD="/usr/bin/rclone mount --daemon --uid=$RUNUSER --gid=$RUNUSER --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:$RCLONE_REMOTE_STORAGE_PATH $MOUNT_VOLUME_PATH -vvv"
+	uid=`id -u $RUNUSER`
+
+	echo "INFO: Mounting rclone volume at path $MOUNT_VOLUME_PATH for uid/gid=$uid ..."
+	MOUNT_CMD="/usr/bin/rclone mount --daemon --uid=$uid --gid=$uid --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:$RCLONE_REMOTE_STORAGE_PATH $MOUNT_VOLUME_PATH -vvv"
 	eval $MOUNT_CMD
 
 	# - Wait until filesystem is ready

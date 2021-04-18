@@ -34,6 +34,7 @@ UWSGI_HTTP=0
 MOUNT_RCLONE_VOLUME=0
 MOUNT_VOLUME_PATH="/mnt/storage"
 RCLONE_REMOTE_STORAGE="neanias-nextcloud"
+RCLONE_REMOTE_STORAGE_PATH="."
 RCLONE_MOUNT_WAIT_TIME=10
 
 echo "ARGS: $@"
@@ -134,6 +135,9 @@ do
 		--rclone-remote-storage=*)
     	RCLONE_REMOTE_STORAGE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
+		--rclone-remote-storage-path=*)
+    	RCLONE_REMOTE_STORAGE_PATH=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
 		--rclone-mount-wait=*)
     	RCLONE_MOUNT_WAIT_TIME=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
@@ -165,7 +169,7 @@ if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 
 	# - Create mount directory if not existing
 	echo "INFO: Creating mount directory $MOUNT_VOLUME_PATH ..."
-	mkdir -p $MOUNT_VOLUME_PATH
+	mkdir -p $MOUNT_VOLUME_PATH	
 
 	# - Get device ID of standard dir, for example $HOME
 	#   To be compared with mount point to check if mount is ready
@@ -173,8 +177,8 @@ if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 	echo "INFO: Standard device id @ $HOME: $DEVICE_ID"
 
 	# - Mount rclone volume in background
-	echo "INFO: Mounting rclone volume at path $MOUNT_VOLUME_PATH ..."
-	MOUNT_CMD="/usr/bin/rclone mount --daemon --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:. $MOUNT_VOLUME_PATH -vvv"
+	echo "INFO: Mounting rclone volume at path $MOUNT_VOLUME_PATH for uid/gid=$RUNUSER ..."
+	MOUNT_CMD="/usr/bin/rclone mount --daemon --uid=$RUNUSER --gid=$RUNUSER --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:$RCLONE_REMOTE_STORAGE_PATH $MOUNT_VOLUME_PATH -vvv"
 	eval $MOUNT_CMD
 
 	# - Wait until filesystem is ready
@@ -194,6 +198,11 @@ if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 	# - Print mount dir content
 	echo "INFO: Mounted rclone storage at $MOUNT_VOLUME_PATH with success (MOUNT_DEVICE_ID: $MOUNT_DEVICE_ID)..."
 	ls -ltr $MOUNT_VOLUME_PATH
+
+	# - Create job & data directories
+	echo "INFO: Creating job & data directories ..."
+	mkdir -p 	$MOUNT_VOLUME_PATH/jobs
+	mkdir -p 	$MOUNT_VOLUME_PATH/data
 
 fi
 

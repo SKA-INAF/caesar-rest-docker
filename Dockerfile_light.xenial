@@ -88,6 +88,9 @@ ENV MOUNT_VOLUME_PATH $MOUNT_VOLUME_PATH_ARG
 ARG RCLONE_REMOTE_STORAGE_ARG="neanias-nextcloud"
 ENV RCLONE_REMOTE_STORAGE $RCLONE_REMOTE_STORAGE_ARG
 
+ARG RCLONE_REMOTE_STORAGE_PATH_ARG="."
+ENV RCLONE_REMOTE_STORAGE_PATH $RCLONE_REMOTE_STORAGE_PATH_ARG
+
 ARG RCLONE_MOUNT_WAIT_TIME_ARG=10
 ENV RCLONE_MOUNT_WAIT_TIME $RCLONE_MOUNT_WAIT_TIME_ARG
 
@@ -199,7 +202,7 @@ COPY run_uwsgi.sh /opt/caesar-rest/bin/run_uwsgi.sh
 RUN chmod +x /opt/caesar-rest/bin/run_uwsgi.sh
 
 # - Run with tcp socket over uwsgi protocol
-CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --job-monitoring-period=$JOB_MONITORING_PERIOD --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --ssl=$SSL --uwsgi-http=$UWSGI_HTTP --secretfile=$SECRETFILE --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS --mount-rclone-volume=$MOUNT_RCLONE_VOLUME --mount-volume-path=$MOUNT_VOLUME_PATH --rclone-remote-storage=$RCLONE_REMOTE_STORAGE --rclone-mount-wait=$RCLONE_MOUNT_WAIT_TIME"]
+CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --job-monitoring-period=$JOB_MONITORING_PERIOD --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --ssl=$SSL --uwsgi-http=$UWSGI_HTTP --secretfile=$SECRETFILE --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS --mount-rclone-volume=$MOUNT_RCLONE_VOLUME --mount-volume-path=$MOUNT_VOLUME_PATH --rclone-remote-storage=$RCLONE_REMOTE_STORAGE --rclone-remote-storage-path=$RCLONE_REMOTE_STORAGE_PATH --rclone-mount-wait=$RCLONE_MOUNT_WAIT_TIME"]
 
 
 

@@ -1,0 +1,210 @@
+FROM ubuntu:16.04
+MAINTAINER Simone Riggi "simone.riggi@gmail.com"
+
+######################################
+##   DEFINE CUSTOMIZABLE ARGS/ENVS
+######################################
+ARG USER_ARG=caesar
+ENV USER $USER_ARG
+
+ARG PORT_ARG=3031
+ENV PORT $PORT_ARG
+
+ARG DATADIR_ARG=/opt/caesar-rest/data
+ENV DATADIR $DATADIR_ARG
+
+ARG JOBDIR_ARG=/opt/caesar-rest/jobs
+ENV JOBDIR $JOBDIR_ARG
+
+ARG NWORKERS_ARG=2
+ENV NWORKERS $NWORKERS_ARG
+
+ARG NTHREADS_ARG=2
+ENV NTHREADS $NTHREADS_ARG
+
+ARG DBHOST_ARG=127.0.0.1
+ENV DBHOST $DBHOST_ARG
+
+ARG DBPORT_ARG=27017
+ENV DBPORT $DBPORT_ARG
+
+ARG DBNAME_ARG=caesardb
+ENV DBNAME $DBNAME_ARG
+
+ARG SECRETFILE_ARG=/etc/systemd/system/client_secrets.json
+ENV SECRETFILE $SECRETFILE_ARG
+
+#ARG AAI_ARG 
+#ENV AAI ${AAI_ARG:+"--aai"}
+ARG AAI_ARG=0
+ENV AAI $AAI_ARG
+
+ARG SSL_ARG=0
+ENV SSL $SSL_ARG
+
+ARG UWSGI_HTTP_ARG=0
+ENV UWSGI_HTTP $UWSGI_HTTP_ARG
+
+ARG JOB_MONITORING_PERIOD_ARG=5
+ENV JOB_MONITORING_PERIOD $JOB_MONITORING_PERIOD_ARG
+
+ARG BROKER_HOST_ARG="127.0.0.1"
+ENV BROKER_HOST $BROKER_HOST_ARG
+
+ARG BROKER_PORT_ARG="5672"
+ENV BROKER_PORT $BROKER_PORT_ARG
+
+ARG BROKER_PROTO_ARG="amqp"
+ENV BROKER_PROTO $BROKER_PROTO_ARG
+
+ARG BROKER_USER_ARG="guest"
+ENV BROKER_USER $BROKER_USER_ARG
+
+ARG BROKER_PASS_ARG="guest"
+ENV BROKER_PASS $BROKER_PASS_ARG
+
+ENV BROKER_URL "$BROKER_PROTO://$BROKER_USER:$BROKER_PASS@$BROKER_HOST:$BROKER_PORT/"
+
+ARG RESULT_BACKEND_HOST_ARG="127.0.0.1"
+ENV RESULT_BACKEND_HOST $RESULT_BACKEND_HOST_ARG
+
+ARG RESULT_BACKEND_PORT_ARG="27017"
+ENV RESULT_BACKEND_PORT $RESULT_BACKEND_PORT_ARG
+
+ARG RESULT_BACKEND_PROTO_ARG="mongodb"
+ENV RESULT_BACKEND_PROTO $RESULT_BACKEND_PROTO_ARG
+
+ARG RESULT_BACKEND_DBNAME_ARG="caesardb"
+ENV RESULT_BACKEND_DBNAME $RESULT_BACKEND_DBNAME_ARG
+
+ENV RESULT_BACKEND_URL "$RESULT_BACKEND_PROTO://$RESULT_BACKEND_HOST:$RESULT_BACKEND_PORT/$RESULT_BACKEND_DBNAME"
+
+ARG MOUNT_RCLONE_VOLUME_ARG=0
+ENV MOUNT_RCLONE_VOLUME $MOUNT_RCLONE_VOLUME_ARG
+
+ARG MOUNT_VOLUME_PATH_ARG="/mnt/storage"
+ENV MOUNT_VOLUME_PATH $MOUNT_VOLUME_PATH_ARG
+
+ARG RCLONE_REMOTE_STORAGE_ARG="neanias-nextcloud"
+ENV RCLONE_REMOTE_STORAGE $RCLONE_REMOTE_STORAGE_ARG
+
+ARG RCLONE_REMOTE_STORAGE_PATH_ARG="."
+ENV RCLONE_REMOTE_STORAGE_PATH $RCLONE_REMOTE_STORAGE_PATH_ARG
+
+ARG RCLONE_MOUNT_WAIT_TIME_ARG=10
+ENV RCLONE_MOUNT_WAIT_TIME $RCLONE_MOUNT_WAIT_TIME_ARG
+
+ARG JOB_SCHEDULER_ARG="celery"
+ENV JOB_SCHEDULER $JOB_SCHEDULER_ARG
+
+RUN echo "BROKER_URL=$BROKER_URL"
+RUN echo "RESULT_BACKEND_URL=$RESULT_BACKEND_URL"
+
+##########################################################
+##     INSTALL SYS LIBS (IF NOT PRESENT IN BASE IMAGE
+##########################################################
+
+# - Install OS packages
+RUN apt-get update && apt-get install -y software-properties-common apt-utils curl binutils libtool pkg-config build-essential autoconf automake debconf-utils software-properties-common dpkg-dev git cmake wget bzip2 nano unzip locate less ca-certificates iputils-ping nmap dnsutils
+
+# - Install python3.6
+RUN unset PYTHONPATH && add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update
+RUN apt-get install -y python3.6 python3.6-dev 
+
+# - Install pip3.6
+RUN unset PYTHONPATH && curl https://bootstrap.pypa.io/get-pip.py | python3.6
+
+# - Install packages
+RUN apt-get update && apt-get --no-install-recommends install -y libcurl3 openssl libssl-dev uuid-dev libcap-dev libpcre3-dev util-linux openssh-client openssh-server
+
+######################################
+##     INSTALL RCLONE
+######################################
+# - Install fuse
+RUN apt-get update && apt-get --no-install-recommends install -y fuse
+
+# - Install rclone
+RUN curl https://rclone.org/install.sh | bash
+
+######################################
+##     INSTALL CAESAR-REST DEPS
+######################################
+# - Install uwsgi
+RUN unset PYTHONPATH && pip3.6 install --upgrade uwsgi
+
+# - Install python modules
+RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml pymongo flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 astropy==2.0.16 regions matplotlib
+
+
+######################################
+##     INSTALL CAESAR-REST
+######################################
+ENV INSTALL_DIR /opt/caesar-rest
+
+# - Create the installation & other directories
+RUN mkdir -p $INSTALL_DIR $INSTALL_DIR/src $INSTALL_DIR/lib/python3.6/site-packages $INSTALL_DIR/data $INSTALL_DIR/jobs $INSTALL_DIR/config $INSTALL_DIR/logs $INSTALL_DIR/run $INSTALL_DIR/share
+
+# - Clone caesar-rest
+RUN cd $INSTALL_DIR/src && git clone https://github.com/SKA-INAF/caesar-rest.git . && git pull origin devel
+
+# - Create user & set permissions
+RUN adduser --disabled-password --gecos "" $USER && \
+    mkdir -p /home/$USER && \
+    chown -R $USER:$USER /home/$USER && \
+    chown -R $USER:$USER $INSTALL_DIR && \
+    echo "export PYTHONPATH=$INSTALL_DIR/lib/python3.6/site-packages:\$PYTHONPATH" >> /home/$USER/.profile
+
+# - Build & install
+RUN cd $INSTALL_DIR/src && \
+    unset PYTHONPATH && python3.6 setup.py sdist bdist_wheel && \
+    unset PYTHONPATH && python3.6 setup.py build && \
+    unset PYTHONPATH && python3.6 setup.py install --prefix=$INSTALL_DIR
+
+
+######################################
+##     CONFIGURE CAESAR-REST
+######################################
+# - Configure uwsgi
+ENV UWSGI_FILE "$INSTALL_DIR/bin/run_app.py"
+ENV UWSGI_SOCKET_TIMEOUT 65
+ENV UWSGI_HTTP_TIMEOUT 3600000
+ENV UWSGI_BUFFER_SIZE 32768
+ENV UWSGI_CHMOD_SOCKET 660
+
+
+######################################
+##     SET VARS
+######################################
+# - Set vars
+ENV CAESAR_REST_DIR $INSTALL_DIR
+
+# - Set PATH vars
+ENV PATH $CAESAR_REST_DIR/bin:$PATH
+ENV LD_LIBRARY_PATH $CAESAR_REST_DIR/lib:$LD_LIBRARY_PATH
+ENV PYTHONPATH $CAESAR_REST_DIR/lib/python3.6/site-packages:$CAESAR_REST_DIR/lib/python3.6/site-packages/caesar_rest-1.0.0-py3.6.egg/:$PYTHONPATH
+
+RUN echo "export PATH=$PATH" >> /home/$USER/.profile
+RUN echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> /home/$USER/.profile
+RUN echo "export PYTHONPATH=$PYTHONPATH" >> /home/$USER/.profile
+
+######################################
+##     MOUNT VOLUME PATH
+######################################
+# - Create mount volume path
+RUN mkdir -p ${MOUNT_VOLUME_PATH}
+
+######################################
+##     SET RUN OPTIONS
+######################################
+# - Expose container port
+EXPOSE $PORT
+
+# - Copy run script
+COPY run_uwsgi_develBranch.sh /opt/caesar-rest/bin/run_uwsgi.sh
+RUN chmod +x /opt/caesar-rest/bin/run_uwsgi.sh
+
+# - Run with tcp socket over uwsgi protocol
+CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --job-monitoring-period=$JOB_MONITORING_PERIOD --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --ssl=$SSL --uwsgi-http=$UWSGI_HTTP --secretfile=$SECRETFILE --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS --mount-rclone-volume=$MOUNT_RCLONE_VOLUME --mount-volume-path=$MOUNT_VOLUME_PATH --rclone-remote-storage=$RCLONE_REMOTE_STORAGE --rclone-remote-storage-path=$RCLONE_REMOTE_STORAGE_PATH --rclone-mount-wait=$RCLONE_MOUNT_WAIT_TIME --job-scheduler=$JOB_SCHEDULER"]
+
+

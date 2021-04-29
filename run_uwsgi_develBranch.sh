@@ -176,12 +176,12 @@ fi
 
 KUBE_INCLUSTER_OPT=""
 if [ "$KUBE_INCLUSTER" = "1" ] ; then
-  KUBE_INCLUSTER_OPT="--kube_incluster "
+  KUBE_INCLUSTER_OPT="--kube_incluster"
 fi
 
 RCLONE_OPTS=""
 if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
-	RCLONE_OPTS="--mount_rclone_volume --mount_volume_path=$MOUNT_VOLUME_PATH	--rclone_storage_name=$RCLONE_REMOTE_STORAGE --rclone_storage_path=$RCLONE_REMOTE_STORAGE_PATH "
+	RCLONE_OPTS="--mount_rclone_volume --mount_volume_path=$MOUNT_VOLUME_PATH	--rclone_storage_name=$RCLONE_REMOTE_STORAGE --rclone_storage_path=$RCLONE_REMOTE_STORAGE_PATH"
 fi
 
 

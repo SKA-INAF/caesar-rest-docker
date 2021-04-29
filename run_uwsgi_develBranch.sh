@@ -38,6 +38,7 @@ RCLONE_REMOTE_STORAGE_PATH="."
 RCLONE_MOUNT_WAIT_TIME=10
 
 JOB_SCHEDULER=""
+KUBE_INCLUSTER=1
 
 echo "ARGS: $@"
 
@@ -146,6 +147,9 @@ do
 		--job-scheduler=*)
     	JOB_SCHEDULER=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
+		--kube-incluster=*)
+    	KUBE_INCLUSTER=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
 
 	*)
     # Unknown option
@@ -170,13 +174,18 @@ if [ "$JOB_SCHEDULER" != "" ] ; then
   JOB_SCHEDULER_OPT="--job_scheduler=$JOB_SCHEDULER"
 fi
 
+KUBE_INCLUSTER_OPT=""
+if [ "$KUBE_INCLUSTER" = "1" ] ; then
+  KUBE_INCLUSTER_OPT="--kube_incluster "
+fi
+
 RCLONE_OPTS=""
 if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 	RCLONE_OPTS="--mount_rclone_volume --mount_volume_path=$MOUNT_VOLUME_PATH	--rclone_storage_name=$RCLONE_REMOTE_STORAGE --rclone_storage_path=$RCLONE_REMOTE_STORAGE_PATH "
 fi
 
 
-PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $RCLONE_OPTS "
+PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $KUBE_INCLUSTER_OPT $RCLONE_OPTS "
 
 ###############################
 ##    MOUNT VOLUMES

@@ -39,6 +39,7 @@ RCLONE_MOUNT_WAIT_TIME=10
 
 JOB_SCHEDULER=""
 KUBE_INCLUSTER=1
+KUBE_CONFIG=""
 KUBE_CAFILE=""
 KUBE_KEYFILE=""
 KUBE_CERTFILE=""
@@ -153,6 +154,9 @@ do
 		--kube-incluster=*)
     	KUBE_INCLUSTER=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
+		--kube-config=*)
+    	KUBE_CONFIG=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
 		--kube-cafile=*)
     	KUBE_CAFILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
@@ -190,7 +194,7 @@ KUBE_OPTS=""
 if [ "$KUBE_INCLUSTER" = "1" ] ; then
   KUBE_OPTS="--kube_incluster "
 fi
-KUBE_OPTS="$KUBE_OPTS --kube_cafile=$KUBE_CAFILE --kube_keyfile=$KUBE_KEYFILE --kube_certfile=$KUBE_CERTFILE"
+KUBE_OPTS="$KUBE_OPTS --kube_config=$KUBE_CONFIG --kube_cafile=$KUBE_CAFILE --kube_keyfile=$KUBE_KEYFILE --kube_certfile=$KUBE_CERTFILE"
 	
 
 RCLONE_OPTS=""

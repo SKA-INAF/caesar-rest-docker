@@ -176,6 +176,119 @@ do
 	esac
 done
 
+
+
+###############################
+##    MOUNT VOLUMES
+###############################
+if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
+
+	# - Create mount directory if not existing
+	echo "INFO: Creating mount directory $MOUNT_VOLUME_PATH ..."
+	mkdir -p $MOUNT_VOLUME_PATH	
+
+	# - Get device ID of standard dir, for example $HOME
+	#   To be compared with mount point to check if mount is ready
+	DEVICE_ID=`stat "$HOME" -c %d`
+	echo "INFO: Standard device id @ $HOME: $DEVICE_ID"
+
+	# - Mount rclone volume in background
+	uid=`id -u $RUNUSER`
+
+	echo "INFO: Mounting rclone volume at path $MOUNT_VOLUME_PATH for uid/gid=$uid ..."
+	MOUNT_CMD="/usr/bin/rclone mount --daemon --uid=$uid --gid=$uid --umask 000 --allow-other --file-perms 0777 --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:$RCLONE_REMOTE_STORAGE_PATH $MOUNT_VOLUME_PATH -vvv"
+	eval $MOUNT_CMD
+
+	# - Wait until filesystem is ready
+	echo "INFO: Sleeping $RCLONE_MOUNT_WAIT_TIME seconds and then check if mount is ready..."
+	sleep $RCLONE_MOUNT_WAIT_TIME
+	#until findmnt --mountpoint "$MOUNT_VOLUME_PATH" --mtab >/dev/null; do :; done
+	#findmnt --poll --timeout 2000
+
+	# - Get device ID of mount point
+	MOUNT_DEVICE_ID=`stat "$MOUNT_VOLUME_PATH" -c %d`
+	echo "INFO: MOUNT_DEVICE_ID=$MOUNT_DEVICE_ID"
+	if [ "$MOUNT_DEVICE_ID" = "$DEVICE_ID" ] ; then
+ 		echo "ERROR: Failed to mount rclone storage at $MOUNT_VOLUME_PATH within $RCLONE_MOUNT_WAIT_TIME seconds, exit!"
+		exit 1
+	fi
+
+	# - Print mount dir content
+	echo "INFO: Mounted rclone storage at $MOUNT_VOLUME_PATH with success (MOUNT_DEVICE_ID: $MOUNT_DEVICE_ID)..."
+	ls -ltr $MOUNT_VOLUME_PATH
+
+	# - Create job & data directories
+	echo "INFO: Creating job & data directories ..."
+	mkdir -p 	$MOUNT_VOLUME_PATH/jobs
+	mkdir -p 	$MOUNT_VOLUME_PATH/data
+
+fi
+
+
+###############################
+##    SET KUBE CONFIG
+###############################
+if [ "$KUBE_INCLUSTER" = "0" ] ; then
+	
+	echo "Creating kube config dir in /home/$RUNUSER ..."
+	KUBE_CONFIG_TOP_DIR="/home/$RUNUSER/.kube"
+	mkdir -p "$KUBE_CONFIG_TOP_DIR"
+
+	uid=`id -u $RUNUSER`
+
+	# - Copy Kube config file (if not empty)
+	if [ "$KUBE_CONFIG" != "" ] ; then
+		if [ -e "$KUBE_CONFIG" ] then;
+			echo "Copying kube config file $KUBE_CONFIG to $KUBE_CONFIG_TOP_DIR ..."
+			cp $KUBE_CONFIG $KUBE_CONFIG_TOP_DIR/config
+			
+			echo "Renaming KUBE_CONFIG to $KUBE_CONFIG_TOP_DIR/config and set uid/gid to $id ..."
+			KUBE_CONFIG="$KUBE_CONFIG_TOP_DIR/config"
+			chown $uid:$uid $KUBE_CONFIG
+		fi
+	fi
+
+	# - Copy Kube ca file to local RUNUSER dir
+	if [ "$KUBE_CAFILE" != "" ] ; then
+		if [ -e "$KUBE_CAFILE" ] then;
+			echo "Copying kube ca file $KUBE_CAFILE to $KUBE_CONFIG_TOP_DIR ..."
+			cp $KUBE_CAFILE $KUBE_CONFIG_TOP_DIR/ca.pem
+			
+			echo "Renaming KUBE_CAFILE to $KUBE_CONFIG_TOP_DIR/ca.pem and set uid/gid to $id ..."
+			KUBE_CAFILE="$KUBE_CONFIG_TOP_DIR/ca.pem"
+			chown $uid:$uid $KUBE_CAFILE
+		fi
+	fi
+
+	# - Copy Kube key file to local RUNUSER dir
+	if [ "$KUBE_KEYFILE" != "" ] ; then
+		if [ -e "$KUBE_KEYFILE" ] then;
+			echo "Copying kube key file $KUBE_KEYFILE to $KUBE_CONFIG_TOP_DIR ..."
+			cp $KUBE_KEYFILE $KUBE_CONFIG_TOP_DIR/client.key
+			
+			echo "Renaming KUBE_KEYFILE to $KUBE_CONFIG_TOP_DIR/client.key and set uid/gid to $id ..."
+			KUBE_KEYFILE="$KUBE_CONFIG_TOP_DIR/client.key"
+			chown $uid:$uid $KUBE_KEYFILE
+		fi
+	fi
+
+	# - Copy Kube cert file to local RUNUSER dir
+	if [ "$KUBE_CERTFILE" != "" ] ; then
+		if [ -e "$KUBE_CERTFILE" ] then;
+			echo "Copying kube cert file $KUBE_CERTFILE to $KUBE_CONFIG_TOP_DIR ..."
+			cp $KUBE_CERTFILE $KUBE_CONFIG_TOP_DIR/client.pem
+			
+			echo "Renaming KUBE_CERTFILE to $KUBE_CONFIG_TOP_DIR/client.cert and set uid/gid to $id ..."
+			KUBE_CERTFILE="$KUBE_CONFIG_TOP_DIR/client.pem"
+			chown $uid:$uid $KUBE_CERTFILE
+		fi
+	fi
+
+fi
+
+###############################
+##    SET UWSGI CONFIG
+###############################
 AAI_OPT=""
 if [ "$AAI" = "1" ] ; then
   AAI_OPT="--aai"
@@ -205,55 +318,6 @@ fi
 
 
 PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $KUBE_OPTS $RCLONE_OPTS "
-
-###############################
-##    MOUNT VOLUMES
-###############################
-if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
-
-	# - Create mount directory if not existing
-	echo "INFO: Creating mount directory $MOUNT_VOLUME_PATH ..."
-	mkdir -p $MOUNT_VOLUME_PATH	
-
-	# - Get device ID of standard dir, for example $HOME
-	#   To be compared with mount point to check if mount is ready
-	DEVICE_ID=`stat "$HOME" -c %d`
-	echo "INFO: Standard device id @ $HOME: $DEVICE_ID"
-
-	# - Mount rclone volume in background
-	uid=`id -u $RUNUSER`
-
-	echo "INFO: Mounting rclone volume at path $MOUNT_VOLUME_PATH for uid/gid=$uid ..."
-	MOUNT_CMD="/usr/bin/rclone mount --daemon --uid=$uid --gid=$uid --umask 000 --allow-other --file-perms 0777 --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:$RCLONE_REMOTE_STORAGE_PATH $MOUNT_VOLUME_PATH -vvv"
-	#MOUNT_CMD="/usr/bin/rclone mount --daemon --umask 000 --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:$RCLONE_REMOTE_STORAGE_PATH $MOUNT_VOLUME_PATH -vvv"
-	#MOUNT_CMD="/usr/bin/rclone mount --daemon --uid=$uid --gid=$uid --umask 000 --allow-other --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:$RCLONE_REMOTE_STORAGE_PATH $MOUNT_VOLUME_PATH -vvv"
-	eval $MOUNT_CMD
-
-	# - Wait until filesystem is ready
-	echo "INFO: Sleeping $RCLONE_MOUNT_WAIT_TIME seconds and then check if mount is ready..."
-	sleep $RCLONE_MOUNT_WAIT_TIME
-	#until findmnt --mountpoint "$MOUNT_VOLUME_PATH" --mtab >/dev/null; do :; done
-	#findmnt --poll --timeout 2000
-
-	# - Get device ID of mount point
-	MOUNT_DEVICE_ID=`stat "$MOUNT_VOLUME_PATH" -c %d`
-	echo "INFO: MOUNT_DEVICE_ID=$MOUNT_DEVICE_ID"
-	if [ "$MOUNT_DEVICE_ID" = "$DEVICE_ID" ] ; then
- 		echo "ERROR: Failed to mount rclone storage at $MOUNT_VOLUME_PATH within $RCLONE_MOUNT_WAIT_TIME seconds, exit!"
-		exit 1
-	fi
-
-	# - Print mount dir content
-	echo "INFO: Mounted rclone storage at $MOUNT_VOLUME_PATH with success (MOUNT_DEVICE_ID: $MOUNT_DEVICE_ID)..."
-	ls -ltr $MOUNT_VOLUME_PATH
-
-	# - Create job & data directories
-	echo "INFO: Creating job & data directories ..."
-	mkdir -p 	$MOUNT_VOLUME_PATH/jobs
-	mkdir -p 	$MOUNT_VOLUME_PATH/data
-
-fi
-
 
 ###############################
 ##    RUN UWSGI

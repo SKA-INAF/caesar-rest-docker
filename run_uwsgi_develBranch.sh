@@ -175,35 +175,7 @@ do
 	esac
 done
 
-AAI_OPT=""
-if [ "$AAI" = "1" ] ; then
-  AAI_OPT="--aai"
-fi
 
-SSL_OPT=""
-if [ "$SSL" = "1" ] ; then
-  SSL_OPT="--ssl"
-fi
-
-JOB_SCHEDULER_OPT=""
-if [ "$JOB_SCHEDULER" != "" ] ; then
-  JOB_SCHEDULER_OPT="--job_scheduler=$JOB_SCHEDULER"
-fi
-
-KUBE_OPTS=""
-if [ "$KUBE_INCLUSTER" = "1" ] ; then
-  KUBE_OPTS="--kube_incluster "
-fi
-KUBE_OPTS="$KUBE_OPTS --kube_config=$KUBE_CONFIG --kube_cafile=$KUBE_CAFILE --kube_keyfile=$KUBE_KEYFILE --kube_certfile=$KUBE_CERTFILE"
-	
-
-RCLONE_OPTS=""
-if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
-	RCLONE_OPTS="--mount_rclone_volume --mount_volume_path=$MOUNT_VOLUME_PATH	--rclone_storage_name=$RCLONE_REMOTE_STORAGE --rclone_storage_path=$RCLONE_REMOTE_STORAGE_PATH"
-fi
-
-
-PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $KUBE_OPTS $RCLONE_OPTS "
 
 ###############################
 ##    MOUNT VOLUMES
@@ -253,6 +225,100 @@ if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 
 fi
 
+
+###############################
+##    SET KUBE CONFIG
+###############################
+if [ "$KUBE_INCLUSTER" = "0" ] ; then
+	
+	echo "Creating kube config dir in /home/$RUNUSER ..."
+	KUBE_CONFIG_TOP_DIR="/home/$RUNUSER/.kube"
+	mkdir -p "$KUBE_CONFIG_TOP_DIR"
+
+	uid=`id -u $RUNUSER`
+
+	# - Copy Kube config file (if not empty)
+	if [ "$KUBE_CONFIG" != "" ] ; then
+		if [ -e "$KUBE_CONFIG" ] then;
+			echo "Copying kube config file $KUBE_CONFIG to $KUBE_CONFIG_TOP_DIR ..."
+			cp $KUBE_CONFIG $KUBE_CONFIG_TOP_DIR/config
+			
+			echo "Renaming KUBE_CONFIG to $KUBE_CONFIG_TOP_DIR/config and set uid/gid to $id ..."
+			KUBE_CONFIG="$KUBE_CONFIG_TOP_DIR/config"
+			chown $uid:$uid $KUBE_CONFIG
+		fi
+	fi
+
+	# - Copy Kube ca file to local RUNUSER dir
+	if [ "$KUBE_CAFILE" != "" ] ; then
+		if [ -e "$KUBE_CAFILE" ] then;
+			echo "Copying kube ca file $KUBE_CAFILE to $KUBE_CONFIG_TOP_DIR ..."
+			cp $KUBE_CAFILE $KUBE_CONFIG_TOP_DIR/ca.pem
+			
+			echo "Renaming KUBE_CAFILE to $KUBE_CONFIG_TOP_DIR/ca.pem and set uid/gid to $id ..."
+			KUBE_CAFILE="$KUBE_CONFIG_TOP_DIR/ca.pem"
+			chown $uid:$uid $KUBE_CAFILE
+		fi
+	fi
+
+	# - Copy Kube key file to local RUNUSER dir
+	if [ "$KUBE_KEYFILE" != "" ] ; then
+		if [ -e "$KUBE_KEYFILE" ] then;
+			echo "Copying kube key file $KUBE_KEYFILE to $KUBE_CONFIG_TOP_DIR ..."
+			cp $KUBE_KEYFILE $KUBE_CONFIG_TOP_DIR/client.key
+			
+			echo "Renaming KUBE_KEYFILE to $KUBE_CONFIG_TOP_DIR/client.key and set uid/gid to $id ..."
+			KUBE_KEYFILE="$KUBE_CONFIG_TOP_DIR/client.key"
+			chown $uid:$uid $KUBE_KEYFILE
+		fi
+	fi
+
+	# - Copy Kube cert file to local RUNUSER dir
+	if [ "$KUBE_CERTFILE" != "" ] ; then
+		if [ -e "$KUBE_CERTFILE" ] then;
+			echo "Copying kube cert file $KUBE_CERTFILE to $KUBE_CONFIG_TOP_DIR ..."
+			cp $KUBE_CERTFILE $KUBE_CONFIG_TOP_DIR/client.pem
+			
+			echo "Renaming KUBE_CERTFILE to $KUBE_CONFIG_TOP_DIR/client.cert and set uid/gid to $id ..."
+			KUBE_CERTFILE="$KUBE_CONFIG_TOP_DIR/client.pem"
+			chown $uid:$uid $KUBE_CERTFILE
+		fi
+	fi
+
+fi
+
+###############################
+##    SET UWSGI CONFIG
+###############################
+AAI_OPT=""
+if [ "$AAI" = "1" ] ; then
+  AAI_OPT="--aai"
+fi
+
+SSL_OPT=""
+if [ "$SSL" = "1" ] ; then
+  SSL_OPT="--ssl"
+fi
+
+JOB_SCHEDULER_OPT=""
+if [ "$JOB_SCHEDULER" != "" ] ; then
+  JOB_SCHEDULER_OPT="--job_scheduler=$JOB_SCHEDULER"
+fi
+
+KUBE_OPTS=""
+if [ "$KUBE_INCLUSTER" = "1" ] ; then
+  KUBE_OPTS="--kube_incluster "
+fi
+KUBE_OPTS="$KUBE_OPTS --kube_config=$KUBE_CONFIG --kube_cafile=$KUBE_CAFILE --kube_keyfile=$KUBE_KEYFILE --kube_certfile=$KUBE_CERTFILE"
+	
+
+RCLONE_OPTS=""
+if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
+	RCLONE_OPTS="--mount_rclone_volume --mount_volume_path=$MOUNT_VOLUME_PATH	--rclone_storage_name=$RCLONE_REMOTE_STORAGE --rclone_storage_path=$RCLONE_REMOTE_STORAGE_PATH "
+fi
+
+
+PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $KUBE_OPTS $RCLONE_OPTS "
 
 ###############################
 ##    RUN UWSGI

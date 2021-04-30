@@ -137,7 +137,7 @@ RUN curl https://rclone.org/install.sh | bash
 RUN unset PYTHONPATH && pip3.6 install --upgrade uwsgi
 
 # - Install python modules
-RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml pymongo flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 astropy==2.0.16 regions matplotlib
+RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml pymongo flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 astropy==2.0.16 regions matplotlib kubernetes
 
 
 ######################################

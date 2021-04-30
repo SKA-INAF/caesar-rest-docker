@@ -230,7 +230,7 @@ fi
 ###############################
 if [ "$KUBE_INCLUSTER" = "0" ] ; then
 	
-	echo "Creating kube config dir in /home/$RUNUSER ..."
+	echo "INFO: Creating kube config dir in /home/$RUNUSER ..."
 	KUBE_CONFIG_TOP_DIR="/home/$RUNUSER/.kube"
 	mkdir -p "$KUBE_CONFIG_TOP_DIR"
 
@@ -239,10 +239,10 @@ if [ "$KUBE_INCLUSTER" = "0" ] ; then
 	# - Copy Kube config file (if not empty)
 	if [ "$KUBE_CONFIG" != "" ] ; then
 		if [ -e "$KUBE_CONFIG" ] ; then
-			echo "Copying kube config file $KUBE_CONFIG to $KUBE_CONFIG_TOP_DIR ..."
+			echo "INFO: Copying kube config file $KUBE_CONFIG to $KUBE_CONFIG_TOP_DIR ..."
 			cp $KUBE_CONFIG $KUBE_CONFIG_TOP_DIR/config
 			
-			echo "Renaming KUBE_CONFIG to $KUBE_CONFIG_TOP_DIR/config and set uid/gid to $id ..."
+			echo "INFO: Renaming KUBE_CONFIG to $KUBE_CONFIG_TOP_DIR/config and set uid/gid to $id ..."
 			KUBE_CONFIG="$KUBE_CONFIG_TOP_DIR/config"
 			chown $uid:$uid $KUBE_CONFIG
 		fi
@@ -251,10 +251,10 @@ if [ "$KUBE_INCLUSTER" = "0" ] ; then
 	# - Copy Kube ca file to local RUNUSER dir
 	if [ "$KUBE_CAFILE" != "" ] ; then
 		if [ -e "$KUBE_CAFILE" ] ; then
-			echo "Copying kube ca file $KUBE_CAFILE to $KUBE_CONFIG_TOP_DIR ..."
+			echo "INFO: Copying kube ca file $KUBE_CAFILE to $KUBE_CONFIG_TOP_DIR ..."
 			cp $KUBE_CAFILE $KUBE_CONFIG_TOP_DIR/ca.pem
 			
-			echo "Renaming KUBE_CAFILE to $KUBE_CONFIG_TOP_DIR/ca.pem and set uid/gid to $id ..."
+			echo "INFO: Renaming KUBE_CAFILE to $KUBE_CONFIG_TOP_DIR/ca.pem and set uid/gid to $id ..."
 			KUBE_CAFILE="$KUBE_CONFIG_TOP_DIR/ca.pem"
 			chown $uid:$uid $KUBE_CAFILE
 		fi
@@ -263,10 +263,10 @@ if [ "$KUBE_INCLUSTER" = "0" ] ; then
 	# - Copy Kube key file to local RUNUSER dir
 	if [ "$KUBE_KEYFILE" != "" ] ; then
 		if [ -e "$KUBE_KEYFILE" ] ; then
-			echo "Copying kube key file $KUBE_KEYFILE to $KUBE_CONFIG_TOP_DIR ..."
+			echo "INFO: Copying kube key file $KUBE_KEYFILE to $KUBE_CONFIG_TOP_DIR ..."
 			cp $KUBE_KEYFILE $KUBE_CONFIG_TOP_DIR/client.key
 			
-			echo "Renaming KUBE_KEYFILE to $KUBE_CONFIG_TOP_DIR/client.key and set uid/gid to $id ..."
+			echo "INFO: Renaming KUBE_KEYFILE to $KUBE_CONFIG_TOP_DIR/client.key and set uid/gid to $id ..."
 			KUBE_KEYFILE="$KUBE_CONFIG_TOP_DIR/client.key"
 			chown $uid:$uid $KUBE_KEYFILE
 		fi
@@ -275,14 +275,18 @@ if [ "$KUBE_INCLUSTER" = "0" ] ; then
 	# - Copy Kube cert file to local RUNUSER dir
 	if [ "$KUBE_CERTFILE" != "" ] ; then
 		if [ -e "$KUBE_CERTFILE" ] ; then
-			echo "Copying kube cert file $KUBE_CERTFILE to $KUBE_CONFIG_TOP_DIR ..."
+			echo "INFO: Copying kube cert file $KUBE_CERTFILE to $KUBE_CONFIG_TOP_DIR ..."
 			cp $KUBE_CERTFILE $KUBE_CONFIG_TOP_DIR/client.pem
 			
-			echo "Renaming KUBE_CERTFILE to $KUBE_CONFIG_TOP_DIR/client.cert and set uid/gid to $id ..."
+			echo "INFO: Renaming KUBE_CERTFILE to $KUBE_CONFIG_TOP_DIR/client.cert and set uid/gid to $id ..."
 			KUBE_CERTFILE="$KUBE_CONFIG_TOP_DIR/client.pem"
 			chown $uid:$uid $KUBE_CERTFILE
 		fi
 	fi
+
+	# - Change dir permissions
+	echo "INFO: Setting 755 permissions to Kube config dir ..."
+	chmod -R 755 $KUBE_CONFIG_TOP_DIR
 
 fi
 

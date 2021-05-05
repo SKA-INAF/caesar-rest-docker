@@ -323,7 +323,7 @@ if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 fi
 
 
-PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --sfindernn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $KUBE_OPTS $RCLONE_OPTS "
+PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --mrcnn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $KUBE_OPTS $RCLONE_OPTS "
 
 ###############################
 ##    RUN UWSGI

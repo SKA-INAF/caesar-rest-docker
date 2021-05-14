@@ -112,6 +112,29 @@ ENV KUBE_KEYFILE $KUBE_KEYFILE_ARG
 ARG KUBE_CAFILE_ARG=""
 ENV KUBE_CAFILE $KUBE_CAFILE_ARG
 
+ARG SLURM_KEYFILE_ARG="/root/.slurm/slurm_jwt_hs256.key"
+ENV SLURM_KEYFILE $SLURM_KEYFILE_ARG
+
+ARG SLURM_USER_ARG="cirasa"
+ENV SLURM_USER $SLURM_USER_ARG
+
+ARG SLURM_HOST_ARG="localhost"
+ENV SLURM_HOST $SLURM_HOST_ARG
+
+ARG SLURM_PORT_ARG="6820"
+ENV SLURM_PORT $SLURM_PORT_ARG
+
+ARG SLURM_BATCH_WORKDIR_ARG="/opt/caesar-rest/batchlogs"
+ENV SLURM_BATCH_WORKDIR $SLURM_BATCH_WORKDIR_ARG
+
+ARG SLURM_QUEUE_ARG="normal"
+ENV SLURM_QUEUE $SLURM_QUEUE_ARG
+
+ARG SLURM_JOBDIR_ARG="/mnt/storage/jobs"
+ENV SLURM_JOBDIR $SLURM_JOBDIR_ARG
+
+ARG SLURM_DATADIR_ARG="/mnt/storage/data"
+ENV SLURM_DATADIR $SLURM_DATADIR_ARG
 
 ##########################################################
 ##     INSTALL SYS LIBS (IF NOT PRESENT IN BASE IMAGE
@@ -218,6 +241,6 @@ COPY run_uwsgi_develBranch.sh /opt/caesar-rest/bin/run_uwsgi.sh
 RUN chmod +x /opt/caesar-rest/bin/run_uwsgi.sh
 
 # - Run with tcp socket over uwsgi protocol
-CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --job-monitoring-period=$JOB_MONITORING_PERIOD --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --ssl=$SSL --uwsgi-http=$UWSGI_HTTP --secretfile=$SECRETFILE --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS --mount-rclone-volume=$MOUNT_RCLONE_VOLUME --mount-volume-path=$MOUNT_VOLUME_PATH --rclone-remote-storage=$RCLONE_REMOTE_STORAGE --rclone-remote-storage-path=$RCLONE_REMOTE_STORAGE_PATH --rclone-mount-wait=$RCLONE_MOUNT_WAIT_TIME --job-scheduler=$JOB_SCHEDULER --kube-incluster=$KUBE_INCLUSTER --kube-config=$KUBE_CONFIG --kube-cafile=$KUBE_CAFILE --kube-keyfile=$KUBE_KEYFILE --kube-certfile=$KUBE_CERTFILE"]
+CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --job-monitoring-period=$JOB_MONITORING_PERIOD --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --ssl=$SSL --uwsgi-http=$UWSGI_HTTP --secretfile=$SECRETFILE --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS --mount-rclone-volume=$MOUNT_RCLONE_VOLUME --mount-volume-path=$MOUNT_VOLUME_PATH --rclone-remote-storage=$RCLONE_REMOTE_STORAGE --rclone-remote-storage-path=$RCLONE_REMOTE_STORAGE_PATH --rclone-mount-wait=$RCLONE_MOUNT_WAIT_TIME --job-scheduler=$JOB_SCHEDULER --kube-incluster=$KUBE_INCLUSTER --kube-config=$KUBE_CONFIG --kube-cafile=$KUBE_CAFILE --kube-keyfile=$KUBE_KEYFILE --kube-certfile=$KUBE_CERTFILE --slurm-keyfile=$SLURM_KEYFILE --slurm-user=$SLURM_USER --slurm-host=$SLURM_HOST --slurm-port=$SLURM_PORT --slurm-batch-workdir=$SLURM_BATCH_WORKDIR --slurm-queue=$SLURM_QUEUE --slurm-jobdir=$SLURM_JOBDIR --slurm-datadir=$SLURM_DATADIR"]
 
 

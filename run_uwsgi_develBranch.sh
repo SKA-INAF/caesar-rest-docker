@@ -44,6 +44,15 @@ KUBE_CAFILE=""
 KUBE_KEYFILE=""
 KUBE_CERTFILE=""
 
+SLURM_KEYFILE=""
+SLURM_USER=""
+SLURM_HOST=""
+SLURM_PORT=""
+SLURM_BATCH_WORKDIR=""
+SLURM_QUEUE=""
+SLURM_JOBDIR=""
+SLURM_DATADIR=""
+
 echo "ARGS: $@"
 
 for item in "$@"
@@ -165,6 +174,31 @@ do
     ;;
 		--kube-certfile=*)
     	KUBE_CERTFILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+
+		--slurm-keyfile=*)
+    	SLURM_KEYFILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--slurm-user=*)
+    	SLURM_USER=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--slurm-host=*)
+    	SLURM_HOST=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--slurm-port=*)
+    	SLURM_PORT=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--slurm-batch-workdir=*)
+    	SLURM_BATCH_WORKDIR=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--slurm-queue=*)
+    	SLURM_QUEUE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--slurm-jobdir=*)
+    	SLURM_JOBDIR=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--slurm-datadir=*)
+    	SLURM_DATADIR=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
 
 	*)
@@ -316,6 +350,7 @@ if [ "$KUBE_INCLUSTER" = "1" ] ; then
 fi
 KUBE_OPTS="$KUBE_OPTS --kube_config=$KUBE_CONFIG --kube_cafile=$KUBE_CAFILE --kube_keyfile=$KUBE_KEYFILE --kube_certfile=$KUBE_CERTFILE"
 	
+SLURM_OPTS="--slurm_keyfile=$SLURM_KEYFILE --slurm_user=$SLURM_USER --slurm_host=$SLURM_HOST --slurm_port=$SLURM_PORT --slurm_batch_workdir=$SLURM_BATCH_WORKDIR --slurm_queue=$SLURM_QUEUE --slurm_jobdir=$SLURM_JOBDIR --slurm_datadir=$SLURM_DATADIR "
 
 RCLONE_OPTS=""
 if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
@@ -323,7 +358,7 @@ if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 fi
 
 
-PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --mrcnn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $KUBE_OPTS $RCLONE_OPTS "
+PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --mrcnn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $KUBE_OPTS $SLURM_OPTS $RCLONE_OPTS "
 
 ###############################
 ##    RUN UWSGI

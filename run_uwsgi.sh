@@ -54,6 +54,12 @@ SLURM_JOBDIR=""
 SLURM_DATADIR=""
 
 FORWARD_LOGS=0
+LOG_LEVEL="INFO"
+LOG_TO_FILE=0
+LOG_DIR="/opt/caesar-rest/logs"
+LOG_FILE="app_logs.json"
+LOG_FILE_MAX_SIZE="5"
+
 
 echo "ARGS: $@"
 
@@ -205,6 +211,21 @@ do
 
 		--forward-logs=*)
     	FORWARD_LOGS=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--loglevel=*)
+    	LOG_LEVEL=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--logtofile=*)
+    	LOG_TO_FILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--logdir=*)
+    	LOG_DIR=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--logfile=*)
+    	LOG_FILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--logfile-maxsize=*)
+    	LOG_FILE_MAX_SIZE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
 
 	*)
@@ -374,8 +395,12 @@ if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 	RCLONE_OPTS="--mount_rclone_volume --mount_volume_path=$MOUNT_VOLUME_PATH	--rclone_storage_name=$RCLONE_REMOTE_STORAGE --rclone_storage_path=$RCLONE_REMOTE_STORAGE_PATH "
 fi
 
+LOGGING_OPTS="--loglevel=$LOG_LEVEL --logdir=$LOG_DIR --logfile=$LOG_FILE --logfile_maxsize=$LOG_FILE_MAX_SIZE "
+if [ "$LOG_TO_FILE" = "1" ] ; then
+	LOGGING_OPTS="$LOGGING_OPTS --logtofile "
+fi
 
-PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --mrcnn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $KUBE_OPTS $SLURM_OPTS $RCLONE_OPTS "
+PYARGS="--datadir=$DATADIR --jobdir=$JOBDIR --job_monitoring_period=$JOB_MONITORING_PERIOD --secretfile=$SECRETFILE --mrcnn_weights=$NNWEIGHTS --db --dbhost=$DBHOST --dbname=$DBNAME --dbport=$DBPORT --result_backend_host=$RESULT_BACKEND_HOST --result_backend_port=$RESULT_BACKEND_PORT --result_backend_proto=$RESULT_BACKEND_PROTO --result_backend_dbname=$RESULT_BACKEND_DBNAME --broker_host=$BROKER_HOST --broker_port=$BROKER_PORT --broker_proto=$BROKER_PROTO --broker_user=$BROKER_USER --broker_pass=$BROKER_PASS $AAI_OPT $SSL_OPT $JOB_SCHEDULER_OPT $KUBE_OPTS $SLURM_OPTS $RCLONE_OPTS $LOGGING_OPTS "
 
 ###############################
 ##    RUN UWSGI

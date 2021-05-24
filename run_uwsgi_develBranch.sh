@@ -53,6 +53,8 @@ SLURM_QUEUE=""
 SLURM_JOBDIR=""
 SLURM_DATADIR=""
 
+FORWARD_LOGS=0
+
 echo "ARGS: $@"
 
 for item in "$@"
@@ -201,6 +203,10 @@ do
     	SLURM_DATADIR=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
 
+		--forward-logs=*)
+    	FORWARD_LOGS=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+
 	*)
     # Unknown option
     echo "ERROR: Unknown option ($item)...exit!"
@@ -210,6 +216,17 @@ do
 done
 
 
+###############################
+##    START FILEBEAT
+###############################
+if [ "$FORWARD_LOGS" = "1" ] ; then
+	echo "Enabling file beat service ..."
+	systemctl enable filebeat.service
+
+	echo "Starting file beat service ..."
+	systemctl start filebeat.service
+	#journalctl filebeat.service -b
+fi
 
 ###############################
 ##    MOUNT VOLUMES
@@ -263,7 +280,7 @@ fi
 ###############################
 ##    SET KUBE CONFIG
 ###############################
-if [ "$KUBE_INCLUSTER" = "0" ] ; then
+if [ "$JOB_SCHEDULER" = "kubernetes" ] && [ "$KUBE_INCLUSTER" = "0" ] ; then
 	
 	echo "INFO: Creating kube config dir in /home/$RUNUSER ..."
 	KUBE_CONFIG_TOP_DIR="/home/$RUNUSER/.kube"

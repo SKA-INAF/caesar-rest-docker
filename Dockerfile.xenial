@@ -186,7 +186,7 @@ RUN apt-get update && apt-get install -y filebeat
 RUN unset PYTHONPATH && pip3.6 install --upgrade uwsgi
 
 # - Install python modules
-RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml pymongo flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 astropy==2.0.16 regions matplotlib kubernetes requests jwt structlog
+RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml pymongo flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 astropy==2.0.16 regions matplotlib kubernetes requests jwt structlog colorama
 
 ######################################
 ##     INSTALL CAESAR-REST

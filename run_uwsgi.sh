@@ -164,7 +164,7 @@ do
     ;;
 		--kube-incluster=*)
     	KUBE_INCLUSTER=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
-    ;;	
+    ;;
 		--kube-config=*)
     	KUBE_CONFIG=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
@@ -177,7 +177,7 @@ do
 		--kube-certfile=*)
     	KUBE_CERTFILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
-		
+
 		--slurm-keyfile=*)
     	SLURM_KEYFILE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
@@ -247,6 +247,8 @@ if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
 
 	echo "INFO: Mounting rclone volume at path $MOUNT_VOLUME_PATH for uid/gid=$uid ..."
 	MOUNT_CMD="/usr/bin/rclone mount --daemon --uid=$uid --gid=$uid --umask 000 --allow-other --file-perms 0777 --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:$RCLONE_REMOTE_STORAGE_PATH $MOUNT_VOLUME_PATH -vvv"
+	#MOUNT_CMD="/usr/bin/rclone mount --daemon --umask 000 --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:$RCLONE_REMOTE_STORAGE_PATH $MOUNT_VOLUME_PATH -vvv"
+	#MOUNT_CMD="/usr/bin/rclone mount --daemon --uid=$uid --gid=$uid --umask 000 --allow-other --dir-cache-time 0m5s --vfs-cache-mode full $RCLONE_REMOTE_STORAGE:$RCLONE_REMOTE_STORAGE_PATH $MOUNT_VOLUME_PATH -vvv"
 	eval $MOUNT_CMD
 
 	# - Wait until filesystem is ready
@@ -339,6 +341,7 @@ if [ "$JOB_SCHEDULER" = "kubernetes" ] && [ "$KUBE_INCLUSTER" = "0" ] ; then
 	chmod -R 755 $KUBE_CONFIG_TOP_DIR
 
 fi
+
 
 ###############################
 ##    SET UWSGI CONFIG

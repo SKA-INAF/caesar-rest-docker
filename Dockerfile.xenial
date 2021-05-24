@@ -136,12 +136,16 @@ ENV SLURM_JOBDIR $SLURM_JOBDIR_ARG
 ARG SLURM_DATADIR_ARG="/mnt/storage/data"
 ENV SLURM_DATADIR $SLURM_DATADIR_ARG
 
+ARG FORWARD_LOGS_ARG=0
+ENV FORWARD_LOGS $FORWARD_LOGS_ARG
+
+
 ##########################################################
 ##     INSTALL SYS LIBS (IF NOT PRESENT IN BASE IMAGE
 ##########################################################
 
 # - Install OS packages
-RUN apt-get update && apt-get install -y software-properties-common apt-utils curl binutils libtool pkg-config build-essential autoconf automake debconf-utils software-properties-common dpkg-dev git cmake wget bzip2 nano unzip locate less ca-certificates iputils-ping nmap dnsutils
+RUN apt-get update && apt-get install -y software-properties-common apt-utils curl binutils libtool pkg-config build-essential autoconf automake debconf-utils software-properties-common dpkg-dev git cmake wget bzip2 nano unzip locate less ca-certificates iputils-ping nmap dnsutils apt-transport-https
 
 # - Install python3.6
 RUN unset PYTHONPATH && add-apt-repository ppa:deadsnakes/ppa
@@ -154,6 +158,9 @@ RUN unset PYTHONPATH && curl https://bootstrap.pypa.io/get-pip.py | python3.6
 # - Install packages
 RUN apt-get update && apt-get --no-install-recommends install -y libcurl3 openssl libssl-dev uuid-dev libcap-dev libpcre3-dev util-linux openssh-client openssh-server
 
+# - Install docker-systemctl-replacement as replacement for systemctl
+RUN wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py -O /usr/local/bin/systemctl && chmod +x /usr/local/bin/systemctl
+
 ######################################
 ##     INSTALL RCLONE
 ######################################
@@ -164,14 +171,22 @@ RUN apt-get update && apt-get --no-install-recommends install -y fuse
 RUN curl https://rclone.org/install.sh | bash
 
 ######################################
+##     INSTALL FILEBEAT
+######################################
+# - Install Elastic repo
+RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add - && echo "deb https://artifacts.elastic.co/packages/6.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-6.x.list
+
+# - Install file beat
+RUN apt-get update && apt-get install -y filebeat
+
+######################################
 ##     INSTALL CAESAR-REST DEPS
 ######################################
 # - Install uwsgi
 RUN unset PYTHONPATH && pip3.6 install --upgrade uwsgi
 
 # - Install python modules
-RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml pymongo flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 astropy==2.0.16 regions matplotlib kubernetes requests jwt
-
+RUN unset PYTHONPATH && pip3.6 install --upgrade numpy itsdangerous MarkupSafe==1.1.1 jinja2==2.10.1 werkzeug flask pyyaml pymongo flask-pymongo flask_oidc_ex celery[mongodb]==4.2.0 astropy==2.0.16 regions matplotlib kubernetes requests jwt structlog
 
 ######################################
 ##     INSTALL CAESAR-REST
@@ -182,7 +197,7 @@ ENV INSTALL_DIR /opt/caesar-rest
 RUN mkdir -p $INSTALL_DIR $INSTALL_DIR/src $INSTALL_DIR/lib/python3.6/site-packages $INSTALL_DIR/data $INSTALL_DIR/jobs $INSTALL_DIR/config $INSTALL_DIR/logs $INSTALL_DIR/run $INSTALL_DIR/share
 
 # - Clone caesar-rest
-RUN cd $INSTALL_DIR/src && git clone https://github.com/SKA-INAF/caesar-rest.git . && git pull origin master
+RUN cd $INSTALL_DIR/src && git clone -b devel https://github.com/SKA-INAF/caesar-rest.git . && git pull origin devel
 
 # - Create user & set permissions
 RUN adduser --disabled-password --gecos "" $USER && \
@@ -241,6 +256,6 @@ COPY run_uwsgi.sh /opt/caesar-rest/bin/run_uwsgi.sh
 RUN chmod +x /opt/caesar-rest/bin/run_uwsgi.sh
 
 # - Run with tcp socket over uwsgi protocol
-CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --job-monitoring-period=$JOB_MONITORING_PERIOD --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --ssl=$SSL --uwsgi-http=$UWSGI_HTTP --secretfile=$SECRETFILE --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS --mount-rclone-volume=$MOUNT_RCLONE_VOLUME --mount-volume-path=$MOUNT_VOLUME_PATH --rclone-remote-storage=$RCLONE_REMOTE_STORAGE --rclone-remote-storage-path=$RCLONE_REMOTE_STORAGE_PATH --rclone-mount-wait=$RCLONE_MOUNT_WAIT_TIME --job-scheduler=$JOB_SCHEDULER --kube-incluster=$KUBE_INCLUSTER --kube-config=$KUBE_CONFIG --kube-cafile=$KUBE_CAFILE --kube-keyfile=$KUBE_KEYFILE --kube-certfile=$KUBE_CERTFILE --slurm-keyfile=$SLURM_KEYFILE --slurm-user=$SLURM_USER --slurm-host=$SLURM_HOST --slurm-port=$SLURM_PORT --slurm-batch-workdir=$SLURM_BATCH_WORKDIR --slurm-queue=$SLURM_QUEUE --slurm-jobdir=$SLURM_JOBDIR --slurm-datadir=$SLURM_DATADIR"]
+CMD ["sh", "-c", "/opt/caesar-rest/bin/run_uwsgi.sh --port=$PORT --datadir=$DATADIR --jobdir=$JOBDIR --job-monitoring-period=$JOB_MONITORING_PERIOD --file=$UWSGI_FILE --nworkers=$NWORKERS --nthreads=$NTHREADS --socket-timeout=$UWSGI_SOCKET_TIMEOUT --chmod-socket=$UWSGI_CHMOD_SOCKET --bufsize=$UWSGI_BUFFER_SIZE --aai=$AAI --ssl=$SSL --uwsgi-http=$UWSGI_HTTP --secretfile=$SECRETFILE --dbhost=$DBHOST --dbport=$DBPORT --dbname=$DBNAME --result-backend-host=$RESULT_BACKEND_HOST --result-backend-port=$RESULT_BACKEND_PORT --result-backend-proto=$RESULT_BACKEND_PROTO --result-backend-dbname=$RESULT_BACKEND_DBNAME --broker-host=$BROKER_HOST --broker-port=$BROKER_PORT --broker-proto=$BROKER_PROTO --broker-user=$BROKER_USER --broker-pass=$BROKER_PASS --mount-rclone-volume=$MOUNT_RCLONE_VOLUME --mount-volume-path=$MOUNT_VOLUME_PATH --rclone-remote-storage=$RCLONE_REMOTE_STORAGE --rclone-remote-storage-path=$RCLONE_REMOTE_STORAGE_PATH --rclone-mount-wait=$RCLONE_MOUNT_WAIT_TIME --job-scheduler=$JOB_SCHEDULER --kube-incluster=$KUBE_INCLUSTER --kube-config=$KUBE_CONFIG --kube-cafile=$KUBE_CAFILE --kube-keyfile=$KUBE_KEYFILE --kube-certfile=$KUBE_CERTFILE --slurm-keyfile=$SLURM_KEYFILE --slurm-user=$SLURM_USER --slurm-host=$SLURM_HOST --slurm-port=$SLURM_PORT --slurm-batch-workdir=$SLURM_BATCH_WORKDIR --slurm-queue=$SLURM_QUEUE --slurm-jobdir=$SLURM_JOBDIR --slurm-datadir=$SLURM_DATADIR --forward-logs=$FORWARD_LOGS"]
 
 

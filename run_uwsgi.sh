@@ -60,6 +60,8 @@ LOG_DIR="/opt/caesar-rest/logs"
 LOG_FILE="app_logs.json"
 LOG_FILE_MAX_SIZE="5"
 
+CHANGE_DNS=0
+
 
 echo "ARGS: $@"
 
@@ -227,6 +229,10 @@ do
 		--logfile-maxsize=*)
     	LOG_FILE_MAX_SIZE=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
+		--changedns=*)
+    	CHANGE_DNS=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+
 
 	*)
     # Unknown option
@@ -236,13 +242,21 @@ do
 	esac
 done
 
+###############################
+##    CHANGE DNS TO GOOGLE
+###############################
+if [ "$CHANGE_DNS" = "1" ] ; then
+	echo "Setting DNS to Google ..."
+	sed -i '/nameserver/c nameserver 8.8.8.8' /etc/resolv.conf
+fi
+
 
 ###############################
 ##    START FILEBEAT
 ###############################
 if [ "$FORWARD_LOGS" = "1" ] ; then
-	echo "Enabling file beat service ..."
-	systemctl enable filebeat.service
+	#echo "Enabling file beat service ..."
+	#systemctl enable filebeat.service
 
 	echo "Starting file beat service ..."
 	systemctl start filebeat.service

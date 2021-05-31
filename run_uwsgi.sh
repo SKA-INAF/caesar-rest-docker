@@ -247,7 +247,8 @@ done
 ###############################
 if [ "$CHANGE_DNS" = "1" ] ; then
 	echo "Setting DNS to Google ..."
-	sed -i '/nameserver/c nameserver 8.8.8.8' /etc/resolv.conf
+	##sed -i '/nameserver/c nameserver 8.8.8.8' /etc/resolv.conf
+	echo "$(sed '/nameserver/c nameserver 8.8.8.8' /etc/resolv.conf)" > /etc/resolv.conf
 fi
 
 

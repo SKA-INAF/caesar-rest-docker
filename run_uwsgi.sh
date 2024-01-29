@@ -52,6 +52,7 @@ SLURM_BATCH_WORKDIR=""
 SLURM_QUEUE=""
 SLURM_JOBDIR=""
 SLURM_DATADIR=""
+SLURM_MAX_CORES_PER_JOB="4"
 
 FORWARD_LOGS=0
 LOG_LEVEL="INFO"
@@ -209,6 +210,9 @@ do
     ;;
 		--slurm-datadir=*)
     	SLURM_DATADIR=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
+    ;;
+		--slurm-max-cores-per-job=*)
+    	SLURM_MAX_CORES_PER_JOB=`echo $item | /bin/sed 's/[-a-zA-Z0-9]*=//'`
     ;;
 
 		--forward-logs=*)
@@ -405,7 +409,7 @@ if [ "$KUBE_INCLUSTER" = "1" ] ; then
 fi
 KUBE_OPTS="$KUBE_OPTS --kube_config=$KUBE_CONFIG --kube_cafile=$KUBE_CAFILE --kube_keyfile=$KUBE_KEYFILE --kube_certfile=$KUBE_CERTFILE"
 	
-SLURM_OPTS="--slurm_keyfile=$SLURM_KEYFILE --slurm_user=$SLURM_USER --slurm_host=$SLURM_HOST --slurm_port=$SLURM_PORT --slurm_batch_workdir=$SLURM_BATCH_WORKDIR --slurm_queue=$SLURM_QUEUE --slurm_jobdir=$SLURM_JOBDIR --slurm_datadir=$SLURM_DATADIR "
+SLURM_OPTS="--slurm_keyfile=$SLURM_KEYFILE --slurm_user=$SLURM_USER --slurm_host=$SLURM_HOST --slurm_port=$SLURM_PORT --slurm_batch_workdir=$SLURM_BATCH_WORKDIR --slurm_queue=$SLURM_QUEUE --slurm_jobdir=$SLURM_JOBDIR --slurm_datadir=$SLURM_DATADIR --slurm_max_cores_per_job=$SLURM_MAX_CORES_PER_JOB "
 
 RCLONE_OPTS=""
 if [ "$MOUNT_RCLONE_VOLUME" = "1" ] ; then
